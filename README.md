@@ -67,3 +67,9 @@ This is necessary to fill light in U-shaped structures (for example tunnels) whe
 #### Requirements
 - Pass 2 must have been completed for the current chunk.
 - Pass 2 must have been completed for each of the directly adjacent 4 chunks.
+
+## Notes
+- Block and sky light are independent and can be calculated in parallel.
+- If pass 1 did nothing for any of the 4 adjacent chunks, pass 2 can be skipped for the current chunk, since it guarantees that none of the adjacent chunks have any border light that can be received by the current chunk.
+- If pass 2 did nothing for any of the 4 adjacent chunks, pass 3 can be skipped for the current chunk, since it guarantees that we didn't send any light across the border to the adjacent chunks.
+- It's possible to record whether light reached chunk borders during pass 1, to allow adjacent chunks to quickly decide whether they want to do pass 2 or not.
