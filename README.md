@@ -63,3 +63,7 @@ This is necessary to fill light in U-shaped structures (for example tunnels) whe
 
 #### Example
 - A torch placed in a U-shaped tunnel that sits across a chunk border
+
+#### Requirements
+- Pass 2 must have been completed for the current chunk.
+- Pass 2 must have been completed for each of the directly adjacent 4 chunks.
