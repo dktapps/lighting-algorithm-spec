@@ -44,33 +44,33 @@ This pass **must not** influence any other chunks except the source chunk. It's 
 #### Requirements
 - Pass 0 must have been completed.
 
-### Pass 2: Propagate light from adjacent Pass1 chunks into the current chunk
-This pass involves propagating light across chunk borders from adjacent chunks into the current one.
+### Pass 2: Propagate light across chunk borders
+For this pass, we take square groups of 4 chunks, and propagate light across their shared borders.
+No chunk is special; all 4 chunks in each group are treated the same way.
 
-This pass is only necessary if any adjacent chunk has a bordering light level of at least 2.
+Each chunk belongs to 4 groups of 4 chunks:
+
+- one where it is the top-left chunk
+- one where it is the top-right chunk
+- one where it is the bottom-left chunk
+- one where it is the bottom-right chunk
+
+Once a chunk has been involved in a pass 2 calculation in all of these positions, it is then fully light-populated.
+
+#### Why not groups of 9?
+Groups of 4, while harder to explain, are significantly more parallel-friendly, easier to code, and in the case of PocketMine-MP, require significantly fewer chunk copies (4 instead of 9), due to the fact that a pass2 using groups of 4 only needs to lock a chunk 4 times.
 
 #### Example
-- A torch placed on or near a chunk border
+- A torch is placed in chunk (0,0) at x=14,z=14
+- A tunnel crosses into chunk (0,1), turns right, crosses into chunk (1,1), then upwards, and crosses into chunk (1,0).
+- The light from the torch must be propagated to all three chunks.
 
-#### Requirements
-- Pass 1 must have been completed for the current chunk.
-- All of the 4 directly adjacent chunks must be available.
-- Pass 1 must have been completed for each of the directly adjacent 4 chunks.
-
-### Pass 3: Propagate light from adjacent Pass2 into the current chunk
-This pass propagates light originating from the current chunk back into the current chunk.
-This is necessary to fill light in U-shaped structures (for example tunnels) where light originating from one side of the U needs to make it to the other side.
-
-#### Example
-- A torch placed in a U-shaped tunnel that sits across a chunk border
-
-#### Requirements
-- Pass 2 must have been completed for the current chunk.
-- Pass 2 must have been completed for each of the directly adjacent 4 chunks.
+#### Requirements for each part of the pass
+- All chunks involved must be available.
+- All chunks involved must have had pass 1 completed.
 
 ## Notes
 - Block and sky light are independent and can be calculated in parallel.
 - If pass 1 did nothing for any of the 4 adjacent chunks, pass 2 can be skipped for the current chunk, since it guarantees that none of the adjacent chunks have any border light that can be received by the current chunk.
-- If pass 2 did nothing for any of the 4 adjacent chunks, pass 3 can be skipped for the current chunk, since it guarantees that we didn't send any light across the border to the adjacent chunks.
-- It's possible to record whether light reached chunk borders during pass 1, to allow adjacent chunks to quickly decide whether they want to do pass 2 or not.
+- It's possible to record whether light reached chunk borders during pass 1, to allow adjacent chunks to quickly decide whether they want to do pass 2 with that chunk or not.
 - Pass 0 and 1 can be embarassingly parallel, since they only require a single chunk to execute.
